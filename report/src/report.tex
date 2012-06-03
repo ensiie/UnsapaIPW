@@ -16,7 +16,6 @@
 \author{Léo Unbekandt - Guillaume Paran - Lucas Saurel}
 \date{Mai 2012}
 \title{Projet web - UnsapaIPW}
-
 \begin{document}
 
   \maketitle
@@ -25,7 +24,7 @@
   \clearpage
 
   \section*{Introduction}
-  \addcontentsline{toc}{section}{Introduction}
+  \addcontentsline{toc}{chapter}{Introduction}
     Le $2^e$ sujet nous a été attribué. Il s'agissait de réaliser une plateforme
     de gestion d'examens sur laquelle des professeurs peuvent créer des examens
     et les étudiants doivent alors déposer un fichier qui soit accessible pour
@@ -40,8 +39,8 @@
 
   \clearpage
     
-  \section{Fonctionnalités de l'application}
-    \subsection{Gestion des rôles}
+  \chapter{Fonctionnalités de l'application}
+    \section{Gestion des rôles}
       L'application web que nous avons réalisée est un système de gestion 
       d'examens. On distingue trois catégories d'utilisateurs:
 
@@ -54,8 +53,17 @@
           promotions et des examens.}
       \end{itemize}
 
-    \subsection{Les différentes \textsl{user stories}}
-      \subsubsection{L'utilisateur s'authentifie}
+    \section{Les différentes \textsl{user stories}}
+       \subsection{Un utilisateur s'inscrit}
+        Lorsqu’un utilisateur s’inscrit son compte est immédiatement activé, mais
+        nous pouvons configurer notre application pour qu’un mail soit envoyé avec une
+        URL de validation (Chemin : app/config/config.yml).
+        \begin{verbatim}
+          Route : /register 
+          Controller : FOSUserBundle:RegistrationController
+        \end{verbatim}
+
+      \subsection{Un utilisateur s'authentifie}
         Si l'utilisateur ne clique pas directement sur \textsl{se connecter}, il lui sera demandé
         de s'authentifier lorsqu'il tentera d'accéder à des pages où un utilisateur inconnu
         n'a pas le droit d'accès. Les mots de passe sont stockés en sha1 dans la base de données,
@@ -65,29 +73,45 @@
           Controller : FOSUserBundle:SecurityController
         \end{verbatim}
 
-      \subsubsection{L'utilisateur s'inscrit}
-        Lorsqu’un utilisateur s’inscrit son compte est immédiatement activé, mais
-        nous pouvons configurer notre application pour qu’un mail soit envoyé avec une
-        URL de validation.(Chemin : app/config/config.yml)
+      \subsection{Un respo TD crée un examen}
+        Si un utilisateur a le rôle de responsable de TD, il a la possibilité
+        de créer des examens.        
         \begin{verbatim}
-          Route : /register 
-          Controller : FOSUserBundle:RegistrationController
+          Route : /exams/add
+          Controller : ExamsController
+          Action : addAction
         \end{verbatim}
 
-      \subsubsection{L'utilisateur consulte la liste des examens auxquels il est inscrit}
+      \subsection{Un respo TD gère les étudiants associés à un examen}
+          Lors de l'ajout d'un examen, le respo TD choisit une promotion. Par défaut
+          tous les étudiants de cette promotion seront associés. Cependant, il peut
+          s'il le souhaite cliquer sur détails et sélectionner 
+          précisément les participants à l'examen.
+          Sur la page listant les examens dont il est responsable, il peut
+          cliquer sur "Gérer les étudiants" et accéder à une page où,
+          de la même manière, il pourra gérer plus finement les
+          étudiants qui sont concernés:
+              \vspace{1em}
+              \begin{verbatim}
+                Route : /exams/{:examid}/students
+                Controller : AttendController
+                Action : examChoiceAction
+              \end{verbatim}
+
+     \subsection{Un étudiant consulte la liste des examens auxquels il est associé}
         \begin{verbatim}
           Route : /exams 
           Controller : ExamsController
           Action : indexAction
         \end{verbatim}
 
-      \subsubsection{L'utilisateur dépose un examen}
-        Les fichiers DOC, DOCX, PDF et ZIP sont acceptés. Nous faisons
-        la vérification par rapport aux mime-types et pas seulement par rapport aux extensions.
+      \subsection{Un étudiant dépose un rendu}
         Un étudiant peut proposer un rendu pour chaque examen auquel il a été inscrit.
         Lorsqu'il choisit l'examen pour lequel rendre un document, il est averti s'il a
         déjà rendu quelque chose. L'interface lui propose également de télécharger l'ancienne
         version de son travail.
+        Les fichiers DOC, DOCX, PDF et ZIP sont acceptés. Nous faisons
+        la vérification par rapport aux mime-types et pas seulement par rapport aux extensions.
         Page de soumission :
         \begin{verbatim}
           Route : /register/submit
@@ -101,65 +125,25 @@
           Action : downloadAction
         \end{verbatim}
 
-      \subsubsection{L'utilisateur crée un examen}
-        Si un utilisateur a le rôle de responsable de TD, il a la possibilité
-        de créer des examens.        
-        \begin{verbatim}
-          Route : /exams/add
-          Controller : ExamsController
-          Action : addAction
-        \end{verbatim}
-
-      \subsubsection{L'utilisateur (respo TD) associe des étudiants à un examen}
-        Pour cela il y a 3 possibilités :
-        \begin{itemize}
-          \item{
-              Lors de l'ajout d'un examen, il choisit une promotion. Par défaut
-              tous les étudiants de cette promotion seront concernés par cet
-              examen.
-            }
-          \item{
-              Lors de l'ajout d'un exam, après avoir choisi une promotion, il peut
-              cliquer sur détails, et cela lui permettra de voir tous les étudiants
-              de la promotion sélectionné, et il pourra choisir, étudiant par
-              étudiant qui participe à l'examen.
-            }
-          \item{
-              Sur la page listant les examens dont il est responsable, il peut
-              cliquer sur "Gérer les étudiants", et il accèdera à une page où
-              comme dans le point ce-dessus, il pourra gérer plus finement les
-              étudiants qui sont concernés:
-              \vspace{1em}
-              \begin{verbatim}
-                Route : /exams/{:examid}/students
-                Controller : AttendController
-                Action : examChoiceAction
-              \end{verbatim}
-            }
-        \end{itemize}
-
-      \subsubsection{Associer une note à un document déposé}
+      \subsection{Un respo TD attribue une note à un document déposé}
         Lorsqu'un examen est terminé, le responsable peut commencer à noter les rendus.
-        Il ne peut pas le faire avant, car nous laissons aux étudiants la possibilité
-        de modifier leur rendu jusqu'au dernier jour. Et noter un rendu qui n'est pas
-        définitif ne sert à rien.
-        Donc sur la page qui liste les examens dont il est responsable
+        Il ne peut pas le faire avant car nous laissons aux étudiants la possibilité
+        de modifier leur rendu jusqu'au dernier jour.
+        Sur la page qui liste les examens dont il est responsable
         (/exams), dans la partie "Examens terminés",
-        un responsable peut avoir accès à la liste des étudiants. Voir ceux qui
+        un responsable a accès à la liste des étudiants. Il voit ceux qui
         n'ont rien rendu, et ceux qui ont proposé un document. Il peut alors
-        télécharger ce qui a été proposé. 
+        télécharger ce qui a été proposé et noter.
         (/download/{:examid}/{:userid})
-
         Afin de faciliter l'ordre sur l'ordinateur du responsable, les documents
         téléchargés ont un nom sous la form "nomexamen\_nométudiant.ext".
-
         \begin{verbatim}
           Route : /exams/{:examid}/marks
           Controller : AttendController
           Action : markStudentsAction
         \end{verbatim}
 
-      \subsubsection{Un utilisateur accède aux moyennes par promo}
+      \subsection{Un utilisateur consulte les moyennes par promo}
         Une page avec des statistiques simples est proposée pour tous les utilisateurs,
         même les non-identifiés.
         \begin{verbatim}
@@ -168,10 +152,10 @@
           Action : indexAction
         \end{verbatim}
 
-      \subsubsection{Un utilisateur peut gérer les promos}
+      \subsection{Un administrateur gère les promos}
         Il existe un utilisateur ayant le rôle d'administrateur sur le site. Il
-        a accès à un panneau d'administration, où il va pouvoir 
-        ajouter/modifier/supprimer des promotions, voir/modifier/(dé)sactiver/changer de rôle
+        a accès à un panneau d'administration d'où il va pouvoir 
+        ajouter/modifier/supprimer des promotions, voir/modifier/(dés)activer/changer de rôle
         les comptes utilisateurs.
         \begin{verbatim}
           Route : /admin
@@ -179,6 +163,7 @@
           Action : indexAction
         \end{verbatim}
  
+    \section{Ce que nous n'avons pas fait}
     \subsection{Génération des mots de passe}
         Il est demandé dans le sujet de générer aléatoirement un mot de passe lors 
         de l'inscription d'un nouvel utilisateur. Nous utilisons un Bundle qui 
@@ -190,7 +175,7 @@
         et nous sommes donc plutot concentrés sur des tâches plus prioritaires.
         
         
-      \subsubsection{3 états pour les examens}
+      \subsection{3 états pour les examens}
         Le sujet demandait à ce qu'un examen puisse être :
 
         \begin{itemize}
@@ -203,7 +188,7 @@
         En l'occurrence, un examen dont la date n'est pas encore passée est "en cours"
         tandis qu'un examen dont la date est passée est "clos" et la notation peut commencer.
   	
-  \section{Schéma de données}
+  \chapter{Schéma de données}
     Le sujet nous imposait d'utiliser plusieurs entitées auxquelles nous avons 
     ajouté un certain nombre d'attributs.
 
@@ -221,7 +206,7 @@
     \end{figure}
     \clearpage
 
-    \subsection{User}
+    \section{User}
       En plus des champs prérequis :
       \begin{itemize}
         \item{Prénom}
@@ -245,13 +230,13 @@
       Enfin, nous avons ajouté un champ promotion. En effet, on considère 
       qu'un étudiant appartient à une promotion précise.
 
-    \subsection{Promo}
+    \section{Promo}
       Les promotions correspondent à un regroupement d'utilisateurs, dans le cas
       d'utilisation présent, tous les étudiants d'une même année appartiennent 
       à une promotion unique.
 
 
-    \subsection{Exam}
+    \section{Exam}
       Un examen représente une épreuve définie par un enseignant. L'examen 
 			comprend les propriétés suivantes :
 			\begin{itemize}
@@ -266,10 +251,11 @@
 			Par défaut, lors de la création de l'examen, tous les étudiants de la 
       promotion sélectionnée sont concernés par l'examen, mais il est également 
       possible de modifier au cas par cas si un étudiant est affecté par l'examen.
-    \subsection{Record}
+      
+    \section{Record}
 			L'entité Record fait le lien entre les étudiants et les examens. En effet
       dans un record on attribue pour un étudiant et un examen, la note, ainsi
-      que le document rhttps://rubygems.org/endu (Fichier pdf ou word).
+      que le document rendu (Fichier pdf ou word).
 
 			On a donc :
 			\begin{itemize}
@@ -281,35 +267,36 @@
 
 			Ainsi un Record avec la note et le document NULL, correspond au fait qu'un
       étudiant doit effectuer un rendu pour un tel examen. Quand il rend quelque
-      chose, on peuple le champ 'Document'. Et ensuite quand l'examen est terminé
+      chose, on peuple le champ 'Document'. Quand la date de rendu est passée,
       le responsable de l'examen peut associer une note.
 
   \clearpage
-  \section{Réalisation Technique}
-    \subsection{Symfony2}
+  \chapter{Réalisation Technique}
+    \section{Symfony2}
       Contrairement à ce qui a été vu en cours, nous avons choisi d'utiliser la 
       version 2 du framework symfony. Pourquoi avons nous fait ce choix ? Nous 
       trouvions intéressant de nous porter sur une technologie plus neuve que 
-      symfony 1.x, en pensant que d'ici quelques années, cette version sera bien
-      plus utilisé dans des projets qu'une plus ancienne version.
+      Symfony 1.x, en pensant que d'ici quelques années, cette version sera bien
+      plus utilisée dans des projets qu'une plus ancienne version.
       
-      Outre, cela nous permettait d'accumuler d'un côté les connaissances sur
-      Symfony 1.x du cours, et en plus ce qui a été fait dans Symfony2. Du coup
-      d'un point de vu pédagogique, nous avons bien plus appris de cette manière.
+      En outre, cela nous a permis d'accumuler d'un côté les connaissances sur
+      Symfony 1.x du cours, et en plus ce qui a été fait dans Symfony2. D'un point de vu 
+      pédagogique, nous avons bien plus appris de cette manière.
       
-      De plus la communauté Symfony s'est massivement adapté à la Symfony2, ainsi
-      de nombreux plugins sont disponibles aisément, grâce au projet \textsl{Composer}
-      \footnotemark{\href{http://getcomposer.org/}{http://getcomposer.org/}}
-      un gestionnaire de paquets pour PHP, et très utilisé dans cet écosystème,
-      à la manière des gems en Ruby
-      \footnotemark{\href{https://rubygems.org/}{https://rubygems.org/}}.
+      De plus la communauté Symfony s'est massivement adaptée à Symfony2, ainsi
+      de nombreux plugins sont aujourd'hui disponibles, grâce au projet \textsl{Composer}
+      \footnote{\href{http://getcomposer.org/}{http://getcomposer.org/}}
+      , un gestionnaire de paquets pour PHP très utilisé dans cet écosystème,
+      à la manière des gems en Ruby\footnote{\href{https://rubygems.org/}{https://rubygems.org/}}
+.
       
-    \subsection{UserBundle}
+
+    \section{UserBundle}
       Nous avons utilisé un Bundle d'extension nommé : 
       \href{https://github.com/FriendsOfSymfony/FOSUserBundle}{UserBundle}.
       
-      Ce bundle constitue la brique applicative qui permet d'effectuer toutes
-      les actions nécessaires à presque tous les projets, c'est-à-dire :
+      Ce bundle constitue la brique applicative qui permet d'ajouter un grand
+      nombre de fonctionnalités nécessaires à la plupart des projets :
       \begin{itemize}
         \item{Inscription}
         \item{Authentification}
@@ -319,10 +306,10 @@
         \item{Changement de mot de passe}
       \end{itemize}\vspace{1em}
 
-      Nous évitant du travail laborieux qui ne sert pas sur le plan métier de
-      l'application.
+      L'utilisation de ce Bundle nous a permis d'éviter un travail long
+      et inutile sur le plan métier de l'application.
       
-    \subsection{Jeu de données}
+    \section{Jeu de données}
         Afin de pouvoir effectuer des tests, nous avons mis en place un jeu de
         données comprenant plusieurs utilisateurs. Les mots de passe utilisés
         sont identiques aux noms d'utilisateur.
@@ -340,7 +327,7 @@
         \end{itemize}
         
         Enfin, on peut s'authentifier en tant qu'étudiant en utilisant les
-        identifiants suivants en choisissant 'x' entre 1 et 10:
+        identifiants suivants et en choisissant 'x' entre 1 et 10:
         
         \begin{itemize}
           \item{Promo 2012 : 'user2012x'}
@@ -350,14 +337,14 @@
         
         Nous avons essayé de couvrir l'intégralité des possibilités de l'application
         avec notre jeu de données de test. C'est-à-dire 90 examens, qui se sont
-        déjà passés où qui sont à venir, 30 étudiants de 3 promotions différentes,
-        5 responsables de TD, un administrateur, et 960 participations aux examens.
+        déjà passés ou qui sont à venir, 30 étudiants de 3 promotions différentes,
+        5 responsables de TD, un administrateur et 960 participations aux examens.
         Parmi ces participations, certaines ont déjà été notées, d'autres sont en 
-        attente de correction, ou encore n'ont pas de rendu, du coup ne peuvent
+        attente de correction ou n'ont pas de rendu et du coup ne peuvent
         être corrigées. Il y a aussi des participations où l'examen n'est pas terminé,
         et donc l'étudiant n'a pas forcément rendu de document.
 
-    \subsection{Les tests avec PHPUnit}
+    \section{Les tests avec PHPUnit}
 	  Nous avons principalement testé les différentes entités. Grâce à PHPUnit
       la couverture en tests de notre code a été modélisée : 
 
@@ -366,7 +353,7 @@
       Pour le faire depuis la racine du projet :
       \begin{verbatim}phpunit --coverage-html=cov/ -c app/\end{verbatim}
 
-    \subsection{La documentation développeur avec phpDocumentor}
+    \section{La documentation développeur avec phpDocumentor}
 			Tout notre code a été documenté en utilisant phpDocumentor. On peut 
       trouver cette documentation à l'adresse suivante :
 
@@ -376,18 +363,18 @@
       \begin{verbatim}phpdoc -c app/phpdoc.dist.xml\end{verbatim}    
   \clearpage
   
-  \section{Organisation de l'équipe}
-    \subsection{Gestion du code source}
+  \chapter{Organisation de l'équipe}
+    \section{Gestion du code source}
       Afin de travailler le plus efficacement possible, nous avons décidé d'utiliser l'outil 
-    collaboratif Github. Ce service permet une méthode de travail complètement
-    décentralisé, qui permet à chacun de travailler de son côté, en ensuite
-    de notifier chacun par email lorsqu'il a des proposition à effectuer, afin
-    de centrer la gestion du projet autour de la communication, sûrement l'élément
-    le plus important dans la gestion de projet.
+    collaboratif Github. Cette méthode de travail complètement décentralisée
+    a permis à chacun de travailler de son côté et
+    de notifier les autres par email à chaque proposition de modification.
+    Notre projet s'est donc articulé autour de la communication, sûrement l'élément
+    le plus important de la gestion de projet.
     
     \begin{figure}[h]
     \begin{center}
-        \includegraphics{./githublogo.png}
+        \includegraphics[width=0.3\textwidth]{./githublogo.png}
         \caption{Logo de Github}
         \end{center}
     \end{figure}
@@ -397,44 +384,64 @@
     (Développement du kernel Linux, Facebook, Twitter par exemple) et est reconnu 
     pour être efficace.
       
-    \subsection{Répartition des tâches}
+    \section{Répartition des tâches}
   	  Concernant la répartition des tâches, nous avons fonctionné de manière
-   relativement autonome, nous ne nous sommes pas attribué à chacun des tâches,
+   relativement autonome. Nous ne nous sommes pas attribué de tâches
    mais nous avons listé tout ce que nous avions à faire dans un bug tracker.
    De cette manière chacun était libre de s'approprier les tâches selon sa 
-   motivation et son niveau les sujets sur lesquels il souhaitait travailler.
+   motivation, son niveau et les sujets sur lesquels il souhaitait travailler.
      
      Il est clair que cette méthode entraine des disparités au niveau de la quantité
    de tâches réalisées par chacun des membres de l'équipe. Mais c'est quelque 
    chose de naturel dans un projet (surtout scolaire). Le principal but de ce
    genre de projet étant pédagogique uniquement. Nous pensons que ce but a été
-   atteint. Chacun a pu apprendre pas mal de choses, et au final, c'est ce
+   atteint. Chacun a pu apprendre pas mal de choses et au final c'est ce
    point là qui est important.
   
-  \subsection{Difficultés rencontrées}
-    \subsubsection{Un langage à apprendre}
+  \section{Difficultés rencontrées}
+    \subsection{Des langages à apprendre}
         Même si nous avions tous des niveaux différents au début du projet,
     aucun de nous ne maîtrisait tous les langages que nous avons été amenés à
-    utiliser (HTML, CSS, JS, PHP). Nous avons donc du apprendre à les utiliser
+    utiliser (HTML, CSS, JS, PHP). Nous avons donc dû apprendre à les utiliser
     sans toutefois y passer trop de temps. C'est pourquoi nous nous sommes parfois
-    limité à chercher les solutions à nos problèmes sans forcément apprendre les
+    limités à chercher les solutions à nos problèmes sans forcément apprendre les
     bases des langages.
     
-    \subsubsection{Un framework a apprivoiser}
+    \subsection{Un framework a apprivoiser}
         Nous avons fait le choix d'utiliser le framework Symfony 2 et avons
     donc eu beaucoup à apprendre au travers de la documentation officielle afin
     de nous former à son utilisation.
     
-    \subsubsection{Utilisation de GIT (et Github)}
+    \subsection{Utilisation de GIT (et Github)}
         Pour deux d'entre nous il a fallu découvrir et apprendre à utiliser le
     gestionnaire de versions GIT. Si cet outil adapté à un tel projet s'est
     finalement révélé efficace, il n'a pas été facile de comprendre ses
     spécificités et nous avons perdu un temps considérable au début du projet
     avant d'être suffisamment à l'aise pour se concentrer sur le développement.
     En revanche cela nous permettra de réutiliser cet outil dans nos projets
-    futurs en étant efficace dès le début.
+    futurs.
   
-  \section*{Conclusion}
-  \addcontentsline{toc}{section}{Conclusion}
-
+  \chapter*{Conclusion}
+  \addcontentsline{toc}{chapter}{Conclusion}
+        Au terme de ce projet, que pouvons nous conclure ? Ce fut un travail tout
+    à fait enrichissant mais loin d'être évident, vu les contraintes temporelles et
+    techniques. En effet, apprendre tellement de technologies en 4-5 semaines et
+    réussir à obtenir un résultat répondant aux contraintes du sujet est un
+    challenge ! Nous pensons avoir réussi à le surmonter, même si tout n'est pas
+    parfait. De manière générale, nous sommes satisfaits de notre production.
+    
+        Du point de vue des améliorations possibles, nous avons pensé à un système 
+    de statistiques plus élaboré, permettant par exemple d'avoir un apercu de
+    l'évolution des résultats d'un étudiant/d'une promotion au cours de l'année.
+    Un système de notifications aurait, par ailleurs, pu prévenir 
+    les étudiants retardataires de la fin imminente d'un examen. On aurait 
+    également pu permettre aux responsables de cours de mettre en ligne leurs 
+    sujets d'examens et/ou de projets. Nous ne sommes pas de grands graphistes,
+    et l'apparence de l'application en découle. Utiliser un framework CSS tel
+    que le bootstrap Twitter nous aurait peut être permis de gagner du temps et
+    de gagner en qualité.
+    
+        L'objectif du projet étant de nous initier au développement web, nous
+    pensons que cet objectif a été atteint et que nous avons acquis les bases de
+    connaissances nous permettant de nous adapter pour de futurs projets.
 \end{document}
